@@ -1,0 +1,23 @@
+name: Submit Nushell package to Windows Package Manager Community Repository 
+
+on:
+  release:
+    types: [published, unpublished]
+
+jobs:
+
+  winget:
+    name: Publish winget package
+    runs-on: windows-latest
+    needs: release
+    steps:
+      - name: Submit package to Windows Package Manager Community Repository
+        run: |
+          iwr https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+          $nushellVersion=$GITHUB_REF
+          $nushellInstallerName="nu_$($nushellVersion -replace '\.','_')_windows.msi"
+          $installerUrl = "https://github.com/nushell/nushell/releases/download/$nushellVersion/$nushellInstallerName"
+          echo $installerUrl
+          $assets= ${{ github.event.release.assets }}
+          $windowsInstaller = $assets | Where-Object -Property name -match 'windows.msi' | Select browser_download_url -First 1
+          echo $windowsInstaller
